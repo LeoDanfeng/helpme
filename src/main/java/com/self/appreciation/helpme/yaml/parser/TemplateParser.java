@@ -21,7 +21,7 @@ public class TemplateParser {
     public static final Path fileStorageLocation;
 
     static {
-        fileStorageLocation = Paths.get("shared-files").resolve("k8s-templates").toAbsolutePath().normalize();
+        fileStorageLocation = Paths.get("k8s-templates").toAbsolutePath().normalize();
         try {
             Files.createDirectories(fileStorageLocation);
         } catch (Exception ex) {

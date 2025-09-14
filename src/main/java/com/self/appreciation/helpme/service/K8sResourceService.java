@@ -26,7 +26,7 @@ public class K8sResourceService {
         }
 
         // 响应式地检查项目唯一性并添加
-//        Mono<Void> projectCheckAndAdd = fileStorageService.readFileLines("project.txt", "zz")
+//        Mono<Void> projectCheckAndAdd = fileStorageService.readFileLines("project.txt", "created-projects")
 //                .filter(project::equals)
 //                .hasElements()
 //                .flatMap(exists -> {

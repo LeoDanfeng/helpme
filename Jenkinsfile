@@ -49,8 +49,7 @@ pipeline {
     stage('Run Docker Image') {
       steps {
         sh """
-          docker volume create helpme || true
-          docker run -p 32768:8080 -v helpme:/my-app/shared-files --rm -d --name helpme ${IMAGE_NAME}
+          docker run -p 32768:8080 --rm -d --name helpme ${IMAGE_NAME}
         """
       }
     }

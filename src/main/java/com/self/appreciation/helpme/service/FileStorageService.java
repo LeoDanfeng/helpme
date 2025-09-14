@@ -17,6 +17,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.stream.Stream;
 
 @Service
@@ -67,10 +69,57 @@ public class FileStorageService {
         }).subscribeOn(Schedulers.boundedElastic());
     }
 
+    // 新增的 YAML 格式文件树方法
+    public Mono<String> listFilesAsYaml() {
+        return Mono.fromCallable(() -> {
+            try {
+                StringBuilder yamlBuilder = new StringBuilder();
+                buildYamlTree(this.fileStorageLocation, yamlBuilder, 1);
+                return yamlBuilder.toString();
+            } catch (IOException e) {
+                throw new RuntimeException("Error building file tree", e);
+            }
+        }).subscribeOn(Schedulers.boundedElastic());
+    }
+
+    private void buildYamlTree(Path directory, StringBuilder yamlBuilder, int depth) throws IOException {
+        String indent = "  ".repeat(depth); // 每层缩进2个空格
+
+        try (Stream<Path> pathStream = Files.list(directory)) {
+            // 分离文件和目录
+            List<Path> files = new ArrayList<>();
+            List<Path> directories = new ArrayList<>();
+
+            pathStream.forEach(path -> {
+                if (Files.isDirectory(path)) {
+                    directories.add(path);
+                } else {
+                    files.add(path);
+                }
+            });
+
+            // 输出文件
+            for (Path file : files) {
+                yamlBuilder.append(indent)
+                        .append(file.getFileName().toString())
+                        .append("\n");
+            }
+
+            // 输出目录及其子内容
+            for (Path dir : directories) {
+                String dirName = dir.getFileName().toString();
+                yamlBuilder.append(indent)
+                        .append(dirName)
+                        .append(":\n");
+                buildYamlTree(dir, yamlBuilder, depth + 1);
+            }
+        }
+    }
+
     public Mono<Boolean> deleteFile(String filename, String... subPaths) {
         return Mono.fromCallable(() -> {
             try {
-                Path filePath = findPath(subPaths);
+                Path filePath = findPath(subPaths).resolve(filename).normalize();
                 return Files.deleteIfExists(filePath);
             } catch (IOException e) {
                 return false;
@@ -82,7 +131,7 @@ public class FileStorageService {
     public Mono<String> readFileContent(String filename, String... subPaths) {
         return Mono.fromCallable(() -> {
             try {
-                Path filePath = findPath(subPaths);
+                Path filePath = findPath(subPaths).resolve(filename).normalize();
                 return Files.readString(filePath, StandardCharsets.UTF_8);
             } catch (IOException e) {
                 throw new RuntimeException("Error reading file: " + filename, e);

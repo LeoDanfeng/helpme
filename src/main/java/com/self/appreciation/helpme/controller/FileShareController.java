@@ -59,6 +59,13 @@ public class FileShareController {
                 .onErrorReturn(ResponseEntity.status(500).build());
     }
 
+    @GetMapping(value = "/listAsTree", produces = MediaType.TEXT_PLAIN_VALUE)
+    public Mono<ResponseEntity<String>> listAsTree() {
+        return fileStorageService.listFilesAsYaml()
+                .map(ResponseEntity::ok)
+                .onErrorReturn(ResponseEntity.status(500).build());
+    }
+
     @DeleteMapping("/delete/{filename}")
     public Mono<ResponseEntity<Map<String, String>>> deleteFile(@PathVariable String filename) {
         return fileStorageService.deleteFile(filename)
