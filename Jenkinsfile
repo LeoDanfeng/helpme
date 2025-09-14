@@ -30,6 +30,15 @@ pipeline {
       }
     }
 
+    stage('Prepare Directories') {
+      steps {
+        sh '''
+          mkdir -p shared-files || true
+          mkdir -p k8s-templates || true
+        '''
+      }
+    }
+
     stage('Remove Last Running') {
       steps {
         sh """
