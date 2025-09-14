@@ -1,10 +1,9 @@
 package com.self.appreciation.helpme.service;
 
+import com.self.appreciation.helpme.yaml.parser.TemplateParser;
 import org.apache.logging.log4j.util.Strings;
 import org.springframework.core.io.Resource;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.util.StringUtils;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -18,35 +17,64 @@ public class K8sResourceService {
     }
 
     public Mono<Resource> getResourcesForProject(String project, String resourceDeclare) {
+        // 参数验证
         if (Strings.isBlank(resourceDeclare)) {
             return Mono.empty();
         }
+        if (Strings.isBlank(project)) {
+            return Mono.error(new IllegalArgumentException("An non-empty project name is required."));
+        }
+
+        // 响应式地检查项目唯一性并添加
+//        Mono<Void> projectCheckAndAdd = fileStorageService.readFileLines("project.txt", "zz")
+//                .filter(project::equals)
+//                .hasElements()
+//                .flatMap(exists -> {
+//                    if (exists) {
+//                        return Mono.error(new RuntimeException("The project name have been existed and it must be unique."));
+//                    } else {
+//                        String appendContent = project + "\n";
+//                        return fileStorageService.appendFile("project.txt", appendContent,"zz");
+//                    }
+//                });
+
+        // 处理资源文件
         String[] resources = resourceDeclare.split(";");
         Flux<String> combinedFlux = Flux.empty();
+        combinedFlux = combinedFlux.concatWith(
+                Mono.fromCallable(() -> TemplateParser.getNamespaceTemplate(project))
+        );
         // mysql=A=a,B=b
         for (String resource : resources) {
-            if (Strings.isBlank(resourceDeclare)) {
+            if (Strings.isBlank(resource)) {
                 continue;
             }
             int i = resource.indexOf("=");
             if (i != -1) {
                 String resourceName = resource.substring(0, i);
-                String resourceFileName = resourceName + "-template.yaml";
+                String[] kvPair;
                 String resourceSetup = resource.substring(i + 1);
-                String[] kvPair = resourceSetup.split(",");
-                combinedFlux = combinedFlux.concatWith(fileStorageService.readFileContent(resourceFileName)
-                        .map(content -> {
-                            content = content.replaceAll("PROJECT", project);
-                            for (String kv : kvPair) {
-                                String[] kvSplit = kv.split("=");
-                                content = content.replaceAll(kvSplit[0], kvSplit[1]);
-                            }
-                            return content;
-                        }));
+                if (Strings.isBlank(resourceSetup)) {
+                    kvPair = null;
+                } else {
+                    kvPair = resourceSetup.split(",");
+                }
+
+                combinedFlux = combinedFlux.concatWith(
+                        Mono.fromCallable(() -> TemplateParser.getResourceTemplate(project, resourceName, kvPair))
+                );
             } else {
-                combinedFlux = combinedFlux.concatWith(fileStorageService.readFileContent(resource));
+                combinedFlux = combinedFlux.concatWith(
+                        Mono.fromCallable(() -> TemplateParser.getResourceTemplate(project, resource, null))
+                );
             }
         }
-        return fileStorageService.fluxStringToResource(combinedFlux);
+
+        // 将项目检查和资源处理组合
+        return
+//                projectCheckAndAdd
+//                .then()
+                fileStorageService.fluxStringToResource(combinedFlux)
+                        .onErrorResume(e -> Mono.error(new RuntimeException("Failed to generate resources", e)));
     }
 }

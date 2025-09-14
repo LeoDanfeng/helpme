@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: podLabel
+spec:
+  selector:
+    app: podLabel
+  ports:
+    - protocol: TCP
+      port: 0
+      targetPort: 0

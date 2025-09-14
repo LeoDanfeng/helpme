@@ -9,6 +9,8 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
+import java.util.Map;
+
 @RestController
 @RequestMapping("/api/k8s")
 public class K8sResourcesController {
@@ -20,20 +22,22 @@ public class K8sResourcesController {
     }
 
     @PostMapping("/resources-for-project")
-    public Mono<ResponseEntity<Resource>> getResourcesForProject(ServerWebExchange exchange) {
+    public Mono<ResponseEntity<Resource>> getResourcesForProject(
+            ServerWebExchange exchange) {
+        StringBuilder filenameBuilder = new StringBuilder();
         return exchange.getFormData()
                 .flatMap(formData -> {
-                    String project = formData.getFirst("project");
-                    String resourceDeclare = formData.getFirst("resourceDeclare");
-                    String filename = project + "-resources-deploy.yaml";
-                    return k8sResourceService.getResourcesForProject(project, resourceDeclare)
-                            .map(resource -> ResponseEntity.ok()
-                                    .contentType(MediaType.APPLICATION_OCTET_STREAM)
-                                    .header(HttpHeaders.CONTENT_DISPOSITION,
-                                            "attachment; filename=" + filename)
-                                    .body(resource))
-                            .onErrorResume(Mono::error);
-                });
-
+                    Map<String, String> singleValueMap = formData.toSingleValueMap();
+                    String project = singleValueMap.get("project");
+                    String resourceDeclare = singleValueMap.get("resourceDeclare");
+                    filenameBuilder.append(project).append(".yaml");
+                    return k8sResourceService.getResourcesForProject(project, resourceDeclare);
+                })
+                .map(resource -> ResponseEntity.ok()
+                        .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                        .header(HttpHeaders.CONTENT_DISPOSITION,
+                                "attachment; filename=" + filenameBuilder)
+                        .body(resource))
+                .onErrorResume(Mono::error);
     }
 }

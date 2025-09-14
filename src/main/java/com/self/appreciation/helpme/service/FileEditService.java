@@ -2,7 +2,6 @@ package com.self.appreciation.helpme.service;
 
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
-import org.springframework.core.io.UrlResource;
 import org.springframework.core.io.buffer.DataBufferUtils;
 import org.springframework.http.codec.multipart.FilePart;
 import org.springframework.stereotype.Service;
