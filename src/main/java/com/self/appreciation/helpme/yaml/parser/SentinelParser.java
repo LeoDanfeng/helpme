@@ -19,7 +19,7 @@ public class SentinelParser {
 
         // 创建 Sentinel 容器
         Container sentinelContainer = new Container(SENTINEL, sentinelTemplate.getImage());
-        sentinelContainer.setPorts(Arrays.asList(new ContainerPort("dashboard", sentinelTemplate.getDashboardPort())));
+        sentinelContainer.setPorts(List.of(new ContainerPort("dashboard", sentinelTemplate.getDashboardPort())));
 
         // 设置环境变量
         List<EnvVar> envVars = new ArrayList<>();
@@ -74,7 +74,7 @@ public class SentinelParser {
         String appLabel = String.join("-", project, SENTINEL);
         Map<String, String> labels = Map.of("app", appLabel);
 
-        Deployment deployment = new Deployment.Builder(deploymentName, Arrays.asList(sentinelContainer))
+        Deployment deployment = new Deployment.Builder(deploymentName, List.of(sentinelContainer))
                 .namespace(project)
                 .replicas(sentinelTemplate.getReplicas())
                 .labels(labels)
@@ -89,7 +89,7 @@ public class SentinelParser {
         ServicePort servicePort = new ServicePort(sentinelTemplate.getDashboardPort(), sentinelTemplate.getDashboardPort());
         servicePort.setName("dashboard");
 
-        Service service = new Service(serviceName, labels, Arrays.asList(servicePort));
+        Service service = new Service(serviceName, labels, List.of(servicePort));
         service.setNamespace(project);
         service.setType(sentinelTemplate.getServiceType());
 

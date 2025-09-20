@@ -87,7 +87,7 @@ public class RabbitMQParser {
             Probe livenessProbe = new Probe();
             Handler livenessHandler = new Handler();
             ExecAction execAction = new ExecAction();
-            execAction.setCommand(Arrays.asList("rabbitmq-diagnostics", "ping"));
+            execAction.setCommand(List.of("rabbitmq-diagnostics", "ping"));
             livenessHandler.setExec(execAction);
             livenessProbe.setHandler(livenessHandler);
             livenessProbe.setInitialDelaySeconds(rabbitMQTemplate.getLivenessProbeInitialDelaySeconds());
@@ -101,7 +101,7 @@ public class RabbitMQParser {
             Probe readinessProbe = new Probe();
             Handler readinessHandler = new Handler();
             ExecAction execAction = new ExecAction();
-            execAction.setCommand(Arrays.asList("rabbitmq-diagnostics", "check_running"));
+            execAction.setCommand(List.of("rabbitmq-diagnostics", "check_running"));
             readinessHandler.setExec(execAction);
             readinessProbe.setHandler(readinessHandler);
             readinessProbe.setInitialDelaySeconds(rabbitMQTemplate.getReadinessProbeInitialDelaySeconds());
@@ -115,7 +115,7 @@ public class RabbitMQParser {
         String appLabel = String.join("-", project, RABBITMQ);
         Map<String, String> labels = Map.of("app", appLabel);
 
-        Deployment deployment = new Deployment.Builder(deploymentName, Arrays.asList(rabbitMQContainer))
+        Deployment deployment = new Deployment.Builder(deploymentName, List.of(rabbitMQContainer))
                 .namespace(project)
                 .replicas(rabbitMQTemplate.getReplicas())
                 .labels(labels)

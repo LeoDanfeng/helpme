@@ -11,9 +11,9 @@ import java.util.Map;
 @NoArgsConstructor
 public class RocketMQTemplate {
     // 基础配置
-    private String image = "apache/rocketmq:latest";
-    private String namesrvImage = "apache/rocketmq:latest";
-    private String brokerImage = "apache/rocketmq:latest";
+    private String image = "apache/rocketmq:5.1.3";
+    private String namesrvImage = "apache/rocketmq:5.1.3";
+    private String brokerImage = "apache/rocketmq:5.1.3";
 
     // 资源配置
     private String namesrvCpuRequest = "250m";

@@ -30,7 +30,7 @@ public class ZookeeperParser {
 
         // 创建 Zookeeper 容器
         Container zookeeperContainer = new Container(ZOOKEEPER, zookeeperTemplate.getImage());
-        zookeeperContainer.setPorts(Arrays.asList(
+        zookeeperContainer.setPorts(List.of(
             new ContainerPort("client", zookeeperTemplate.getClientPort()),
             new ContainerPort("server", zookeeperTemplate.getServerPort()),
             new ContainerPort("election", zookeeperTemplate.getElectionPort())
@@ -44,7 +44,7 @@ public class ZookeeperParser {
         envVars.add(new EnvVar("ZOO_MAX_CLIENT_CNXNS", zookeeperTemplate.getMaxClientCnxns()));
         envVars.add(new EnvVar("ZOO_AUTOPURGE_SNAP_RETAIN_COUNT", zookeeperTemplate.getSnapRetainCount()));
         envVars.add(new EnvVar("ZOO_AUTOPURGE_PURGE_INTERVAL", zookeeperTemplate.getPurgeInterval()));
-        envVars.add(new EnvVar("ZOO_SERVERS", zookeeperTemplate.getServers()));
+//        envVars.add(new EnvVar("ZOO_SERVERS", zookeeperTemplate.getServers()));
         zookeeperContainer.setEnv(envVars);
 
         // 设置资源限制
@@ -79,7 +79,7 @@ public class ZookeeperParser {
             Probe livenessProbe = new Probe();
             Handler livenessHandler = new Handler();
             ExecAction execAction = new ExecAction();
-            execAction.setCommand(Arrays.asList("sh", "-c", "echo ruok | nc localhost 2181 | grep imok"));
+            execAction.setCommand(List.of("sh", "-c", "echo ruok | nc localhost 2181 | grep imok"));
             livenessHandler.setExec(execAction);
             livenessProbe.setHandler(livenessHandler);
             livenessProbe.setInitialDelaySeconds(zookeeperTemplate.getLivenessProbeInitialDelaySeconds());
@@ -93,7 +93,7 @@ public class ZookeeperParser {
             Probe readinessProbe = new Probe();
             Handler readinessHandler = new Handler();
             ExecAction execAction = new ExecAction();
-            execAction.setCommand(Arrays.asList("sh", "-c", "echo ruok | nc localhost 2181 | grep imok"));
+            execAction.setCommand(List.of("sh", "-c", "echo ruok | nc localhost 2181 | grep imok"));
             readinessHandler.setExec(execAction);
             readinessProbe.setHandler(readinessHandler);
             readinessProbe.setInitialDelaySeconds(zookeeperTemplate.getReadinessProbeInitialDelaySeconds());
@@ -107,7 +107,7 @@ public class ZookeeperParser {
         String appLabel = String.join("-", project, ZOOKEEPER);
         Map<String, String> labels = Map.of("app", appLabel);
 
-        Deployment deployment = new Deployment.Builder(deploymentName, Arrays.asList(zookeeperContainer))
+        Deployment deployment = new Deployment.Builder(deploymentName, List.of(zookeeperContainer))
                 .namespace(project)
                 .replicas(zookeeperTemplate.getReplicas())
                 .labels(labels)

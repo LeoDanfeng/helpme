@@ -47,7 +47,7 @@ public class ConsulParser {
         envVars.add(new EnvVar("CONSUL_DATAcenter", consulTemplate.getDatacenter()));
         envVars.add(new EnvVar("CONSUL_DOMAIN", consulTemplate.getDomain()));
         envVars.add(new EnvVar("CONSUL_SERVER", consulTemplate.getServer().toString()));
-        envVars.add(new EnvVar("CONSUL_BOOTSTRAP_EXPECT", consulTemplate.getBootstrapExpect().toString()));
+        envVars.add(new EnvVar("CONSUL_BOOTSTRAP_EXPECT", consulTemplate.getBootstrapExpect()));
         envVars.add(new EnvVar("CONSUL_UI", consulTemplate.getUi()));
 
         if (consulTemplate.getRetryJoin() != null && !consulTemplate.getRetryJoin().isEmpty()) {
@@ -116,7 +116,7 @@ public class ConsulParser {
         String appLabel = String.join("-", project, CONSUL);
         Map<String, String> labels = Map.of("app", appLabel);
 
-        Deployment deployment = new Deployment.Builder(deploymentName, Arrays.asList(consulContainer))
+        Deployment deployment = new Deployment.Builder(deploymentName, List.of(consulContainer))
                 .namespace(project)
                 .replicas(consulTemplate.getReplicas())
                 .labels(labels)

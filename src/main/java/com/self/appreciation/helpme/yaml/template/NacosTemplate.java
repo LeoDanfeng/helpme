@@ -11,7 +11,7 @@ import java.util.Map;
 @NoArgsConstructor
 public class NacosTemplate {
     // 基础配置
-    private String image = "nacos/nacos-server:latest";
+    private String image = "nacos/nacos-server:v2.2.3";
     private String nacosAuthEnable = "false";
     private String nacosAuthSystemType = "nacos";
     private String nacosAuthUsername = "nacos";

@@ -42,12 +42,24 @@ public class KafkaParser {
 
         // 设置环境变量
         List<EnvVar> envVars = new ArrayList<>();
-        envVars.add(new EnvVar("KAFKA_CFG_PROCESS_ROLES", "broker"));
-        envVars.add(new EnvVar("KAFKA_CFG_CONTROLLER_LISTENER_NAMES", "PLAINTEXT"));
-        envVars.add(new EnvVar("KAFKA_CFG_LISTENERS", kafkaTemplate.getListeners()));
-        envVars.add(new EnvVar("KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP", kafkaTemplate.getListenerSecurityProtocolMap()));
+
+        if (kafkaTemplate.getKraftMode()) {
+            // KRaft 模式配置
+            envVars.add(new EnvVar("KAFKA_CFG_PROCESS_ROLES", "broker,controller"));
+            envVars.add(new EnvVar("KAFKA_CFG_CONTROLLER_LISTENER_NAMES", "CONTROLLER"));
+            envVars.add(new EnvVar("KAFKA_CFG_LISTENERS", kafkaTemplate.getListeners() + ",CONTROLLER://:9093"));
+            envVars.add(new EnvVar("KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP", kafkaTemplate.getListenerSecurityProtocolMap()));
+            envVars.add(new EnvVar("KAFKA_CFG_CONTROLLER_QUORUM_VOTERS", kafkaTemplate.getNodeId() + "@" + String.join("-", project, KAFKA, "service") + ":9093"));
+            envVars.add(new EnvVar("KAFKA_CFG_NODE_ID", kafkaTemplate.getNodeId()));
+            envVars.add(new EnvVar("KAFKA_CFG_CLUSTER_ID", kafkaTemplate.getClusterId()));
+        } else {
+            // 传统 ZooKeeper 模式配置
+            envVars.add(new EnvVar("KAFKA_CFG_PROCESS_ROLES", "broker"));
+            envVars.add(new EnvVar("KAFKA_CFG_CONTROLLER_LISTENER_NAMES", "PLAINTEXT"));
+            envVars.add(new EnvVar("KAFKA_CFG_ZOOKEEPER_CONNECT", kafkaTemplate.getZookeeperConnect()));
+        }
+        envVars.add(new EnvVar("KAFKA_CFG_ADVERTISED_LISTENERS ", "PLAINTEXT://" + String.join("-", project, KAFKA, "service") + ":9092,EXTERNAL://localhost:9094"));
         envVars.add(new EnvVar("KAFKA_CFG_INTER_BROKER_LISTENER_NAME", kafkaTemplate.getInterBrokerListenerName()));
-        envVars.add(new EnvVar("KAFKA_CFG_ZOOKEEPER_CONNECT", kafkaTemplate.getZookeeperConnect()));
         envVars.add(new EnvVar("KAFKA_CFG_LOG_RETENTION_HOURS", kafkaTemplate.getLogRetentionHours()));
         envVars.add(new EnvVar("KAFKA_CFG_LOG_SEGMENT_BYTES", kafkaTemplate.getLogSegmentBytes()));
         envVars.add(new EnvVar("KAFKA_CFG_NUM_PARTITIONS", kafkaTemplate.getNumPartitions()));
@@ -63,7 +75,7 @@ public class KafkaParser {
         // 添加额外的环境变量
         if (kafkaTemplate.getExtraEnvs() != null) {
             kafkaTemplate.getExtraEnvs().forEach((key, value) ->
-                envVars.add(new EnvVar(key, value)));
+                    envVars.add(new EnvVar(key, value)));
         }
 
         kafkaContainer.setEnv(envVars);
@@ -84,7 +96,7 @@ public class KafkaParser {
             String volumeName = "kafka-data";
             Volume dataVolume = new Volume(volumeName);
             PersistentVolumeClaimVolumeSource pvcVolumeSource = new PersistentVolumeClaimVolumeSource(
-                String.join("-", project, KAFKA, "pvc"));
+                    String.join("-", project, KAFKA, "pvc"));
             dataVolume.setPersistentVolumeClaim(pvcVolumeSource);
             volumes.add(dataVolume);
 

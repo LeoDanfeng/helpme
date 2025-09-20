@@ -11,7 +11,7 @@ import java.util.Map;
 @NoArgsConstructor
 public class SeataTemplate {
     // 基础配置
-    private String image = "seataio/seata-server:latest";
+    private String image = "seataio/seata-server:1.7.0";
     private String seataVersion = "1.5.2";
     private String storeMode = "file"; // file 或 db
 
@@ -48,14 +48,14 @@ public class SeataTemplate {
     private String dbPassword = "seata";
 
     // 注册中心配置
-    private String registryNacosServerAddr = "nacos:8848";
-    private String registryNacosGroup = "SEATA_GROUP";
-    private String registryNacosNamespace = "";
+    private String registryNacosServerAddr;//= "nacos:8848";
+    private String registryNacosGroup;//= "SEATA_GROUP";
+    private String registryNacosNamespace;//= "";
 
     // 配置中心配置
-    private String configNacosServerAddr = "nacos:8848";
-    private String configNacosGroup = "SEATA_GROUP";
-    private String configNacosNamespace = "";
+    private String configNacosServerAddr;//= "nacos:8848";
+    private String configNacosGroup;//= "SEATA_GROUP";
+    private String configNacosNamespace;//= "";
 
     // 安全配置
     private Boolean tlsEnabled = false;
@@ -70,7 +70,7 @@ public class SeataTemplate {
     private Integer readinessProbeTimeoutSeconds = 3;
 
     // 持久化配置
-    private Boolean persistenceEnabled = false;
+    private Boolean persistenceEnabled = true;
     private String storageSize = "1Gi";
     private String storageClassName;
 

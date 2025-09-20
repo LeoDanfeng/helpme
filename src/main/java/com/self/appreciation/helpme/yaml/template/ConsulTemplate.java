@@ -11,7 +11,7 @@ import java.util.Map;
 @NoArgsConstructor
 public class ConsulTemplate {
     // 基础配置
-    private String image = "consul:latest";
+    private String image = "consul:1.16";
     private String domain = "consul";
     private String datacenter = "dc1";
 
@@ -36,7 +36,7 @@ public class ConsulTemplate {
     // Consul配置
     private Integer replicas = 1;
     private Boolean server = true;
-    private Boolean bootstrapExpect = true;
+    private String bootstrapExpect = "1";
     private String ui = "true";
     private String retryJoin = "";
 

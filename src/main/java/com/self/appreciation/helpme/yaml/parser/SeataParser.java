@@ -31,7 +31,7 @@ public class SeataParser {
 
         // 创建 Seata 容器
         Container seataContainer = new Container(SEATA, seataTemplate.getImage());
-        seataContainer.setPorts(Arrays.asList(new ContainerPort("http", seataTemplate.getPort())));
+        seataContainer.setPorts(List.of(new ContainerPort("http", seataTemplate.getPort())));
 
         // 设置环境变量
         List<EnvVar> envVars = new ArrayList<>();
@@ -155,7 +155,7 @@ public class SeataParser {
         String appLabel = String.join("-", project, SEATA);
         Map<String, String> labels = Map.of("app", appLabel);
 
-        Deployment deployment = new Deployment.Builder(deploymentName, Arrays.asList(seataContainer))
+        Deployment deployment = new Deployment.Builder(deploymentName, List.of(seataContainer))
                 .namespace(project)
                 .replicas(seataTemplate.getReplicas())
                 .labels(labels)
@@ -174,7 +174,7 @@ public class SeataParser {
         ServicePort servicePort = new ServicePort(seataTemplate.getPort(), seataTemplate.getPort());
         servicePort.setName("http");
 
-        Service service = new Service(serviceName, labels, Arrays.asList(servicePort));
+        Service service = new Service(serviceName, labels, List.of(servicePort));
         service.setNamespace(project);
         service.setType(seataTemplate.getServiceType());
 

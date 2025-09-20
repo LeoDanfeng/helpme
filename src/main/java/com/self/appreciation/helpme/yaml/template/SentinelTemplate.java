@@ -11,8 +11,8 @@ import java.util.Map;
 @NoArgsConstructor
 public class SentinelTemplate {
     // 基础配置
-    private String image = "sentinel-dashboard:latest";
-    private String sentinelDashboardVersion = "1.8.4";
+    private String image = "bladex/sentinel-dashboard:1.8.6";
+    private String sentinelDashboardVersion = "1.8.6";
     private String sentinelAuthUsername = "sentinel";
     private String sentinelAuthPassword = "sentinel";
 

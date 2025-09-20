@@ -31,7 +31,7 @@ public class NacosParser {
 
         // 创建 Nacos 容器
         Container nacosContainer = new Container(NACOS, nacosTemplate.getImage());
-        nacosContainer.setPorts(Arrays.asList(
+        nacosContainer.setPorts(List.of(
             new ContainerPort("client", nacosTemplate.getClientPort()),
             new ContainerPort("server", nacosTemplate.getServerPort()),
             new ContainerPort("raft", nacosTemplate.getRaftPort())
@@ -129,7 +129,7 @@ public class NacosParser {
         String appLabel = String.join("-", project, NACOS);
         Map<String, String> labels = Map.of("app", appLabel);
 
-        Deployment deployment = new Deployment.Builder(deploymentName, Arrays.asList(nacosContainer))
+        Deployment deployment = new Deployment.Builder(deploymentName, List.of(nacosContainer))
                 .namespace(project)
                 .replicas(nacosTemplate.getReplicas())
                 .labels(labels)

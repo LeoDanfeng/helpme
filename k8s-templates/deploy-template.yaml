@@ -3,18 +3,18 @@ kind: Deployment
 metadata:
   name: deployment-sample
   labels:
-    app: deployment-sample
+    app: pod-sample
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: deployment-sample
+      app: pod-sample
   template:
     metadata:
       labels:
-        app: deployment-sample
-    spec:
-      containers:
-      -
-      volumes:
-      -
+        app: pod-sample
+#    spec:
+#      containers:
+#      -
+#      volumes:
+#      -

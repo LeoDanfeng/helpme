@@ -11,7 +11,7 @@ import java.util.Map;
 @NoArgsConstructor
 public class KafkaTemplate {
     // 基础配置
-    private String image = "bitnami/kafka:latest";
+    private String image = "bitnami/kafka:3.5.1";
     private String kafkaUsername;
     private String kafkaPassword;
 
@@ -30,8 +30,13 @@ public class KafkaTemplate {
     private String serviceType = "ClusterIP";
     private Integer externalPort = 9094;
 
+    private Boolean kraftMode = true;
+    private String nodeId = "1";
+    private String controllerQuorumVoters;// = "1@localhost:9093";
+    private String clusterId = "ciQcQT1yR5GfH2pfkcVHEA"; // 需要生成唯一的集群ID
+
     // Kafka配置
-    private Integer replicas = 3;
+    private Integer replicas = 1;
     private String zookeeperConnect = "zookeeper:2181";
     private String logRetentionHours = "168";
     private String logRetentionBytes = "1073741824";
@@ -49,7 +54,7 @@ public class KafkaTemplate {
     private Boolean allowPlaintextListener = true;
     private String listeners = "PLAINTEXT://:9092";
     private String advertisedListeners;
-    private String listenerSecurityProtocolMap = "PLAINTEXT:PLAINTEXT,EXTERNAL:PLAINTEXT";
+    private String listenerSecurityProtocolMap = "PLAINTEXT:PLAINTEXT,EXTERNAL:PLAINTEXT,CONTROLLER:PLAINTEXT";
     private String interBrokerListenerName = "PLAINTEXT";
 
     // 性能调优参数
@@ -124,6 +129,26 @@ public class KafkaTemplate {
             kafkaTemplate.cpuLimit = cpuLimit;
             kafkaTemplate.memoryRequest = memoryRequest;
             kafkaTemplate.memoryLimit = memoryLimit;
+            return this;
+        }
+
+        public Builder kraftMode(Boolean kraftMode) {
+            kafkaTemplate.kraftMode = kraftMode;
+            return this;
+        }
+
+        public Builder nodeId(String nodeId) {
+            kafkaTemplate.nodeId = nodeId;
+            return this;
+        }
+
+        public Builder controllerQuorumVoters(String controllerQuorumVoters) {
+            kafkaTemplate.controllerQuorumVoters = controllerQuorumVoters;
+            return this;
+        }
+
+        public Builder clusterId(String clusterId) {
+            kafkaTemplate.clusterId = clusterId;
             return this;
         }
 

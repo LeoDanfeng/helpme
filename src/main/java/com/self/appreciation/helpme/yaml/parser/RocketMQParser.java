@@ -40,7 +40,7 @@ public class RocketMQParser {
 
         // 创建 Name Server 容器
         Container namesrvContainer = new Container(NAMESRV, rocketMQTemplate.getNamesrvImage());
-        namesrvContainer.setPorts(Arrays.asList(new ContainerPort("namesrv", rocketMQTemplate.getNamesrvPort())));
+        namesrvContainer.setPorts(List.of(new ContainerPort("namesrv", rocketMQTemplate.getNamesrvPort())));
 
         // 设置 Name Server 环境变量
         List<EnvVar> namesrvEnvVars = new ArrayList<>();
@@ -55,29 +55,45 @@ public class RocketMQParser {
         namesrvRequirements.putLimit("memory", rocketMQTemplate.getNamesrvMemoryLimit());
         namesrvContainer.setResources(namesrvRequirements);
 
+        // 创建 Name Server Deployment
+        String namesrvDeploymentName = String.join("-", project, ROCKETMQ, NAMESRV, "deployment");
+        String namesrvAppLabel = String.join("-", project, ROCKETMQ, NAMESRV);
+        Map<String, String> namesrvLabels = Map.of("app", namesrvAppLabel);
+
+        Deployment namesrvDeployment = new Deployment.Builder(namesrvDeploymentName, List.of(namesrvContainer))
+                .namespace(project)
+                .replicas(rocketMQTemplate.getNamesrvReplicas())
+                .labels(namesrvLabels)
+                .templateLabels(namesrvLabels)
+                .build();
+
         // 设置 Name Server 卷和挂载点（如果启用了持久化）
         if (rocketMQTemplate.getPersistenceEnabled()) {
             String volumeName = "namesrv-data";
             Volume dataVolume = new Volume(volumeName);
             PersistentVolumeClaimVolumeSource pvcVolumeSource = new PersistentVolumeClaimVolumeSource(
-                String.join("-", project, ROCKETMQ, NAMESRV, "pvc"));
+                    String.join("-", project, ROCKETMQ, NAMESRV, "pvc"));
             dataVolume.setPersistentVolumeClaim(pvcVolumeSource);
 
             VolumeMount dataMount = new VolumeMount(volumeName, "/home/rocketmq/store");
-            namesrvContainer.setVolumeMounts(Arrays.asList(dataMount));
+            namesrvContainer.setVolumeMounts(List.of(dataMount));
+            namesrvDeployment.setVolumes(List.of(dataVolume));
         }
+
+        LinkedHashMap<String, Object> namesrvDeploymentMap = DeploymentParser.parseTemplate(namesrvDeployment);
+        result.append(JacksonUtils.toYaml(namesrvDeploymentMap));
 
         // 创建 Broker 容器
         Container brokerContainer = new Container(BROKER, rocketMQTemplate.getBrokerImage());
-        brokerContainer.setPorts(Arrays.asList(
-            new ContainerPort("broker", rocketMQTemplate.getBrokerPort()),
-            new ContainerPort("broker-ha", rocketMQTemplate.getBrokerHaPort())
+        brokerContainer.setPorts(List.of(
+                new ContainerPort("broker", rocketMQTemplate.getBrokerPort()),
+                new ContainerPort("broker-ha", rocketMQTemplate.getBrokerHaPort())
         ));
 
         // 设置 Broker 环境变量
         List<EnvVar> brokerEnvVars = new ArrayList<>();
         brokerEnvVars.add(new EnvVar("JAVA_OPT", "-server -Xms1g -Xmx1g -Xmn512m"));
-        brokerEnvVars.add(new EnvVar("NAMESRV_ADDR", "localhost:" + rocketMQTemplate.getNamesrvPort()));
+        brokerEnvVars.add(new EnvVar("NAMESRV_ADDR", String.join("-", project, ROCKETMQ, NAMESRV, "service") + ":" + rocketMQTemplate.getNamesrvPort()));
         brokerContainer.setEnv(brokerEnvVars);
 
         // 设置 Broker 资源限制
@@ -88,25 +104,41 @@ public class RocketMQParser {
         brokerRequirements.putLimit("memory", rocketMQTemplate.getBrokerMemoryLimit());
         brokerContainer.setResources(brokerRequirements);
 
+        // 创建 Broker Deployment
+        String brokerDeploymentName = String.join("-", project, ROCKETMQ, BROKER, "deployment");
+        String brokerAppLabel = String.join("-", project, ROCKETMQ, BROKER);
+        Map<String, String> brokerLabels = Map.of("app", brokerAppLabel);
+
+        Deployment brokerDeployment = new Deployment.Builder(brokerDeploymentName, List.of(brokerContainer))
+                .namespace(project)
+                .replicas(rocketMQTemplate.getBrokerReplicas())
+                .labels(brokerLabels)
+                .templateLabels(brokerLabels)
+                .build();
+
+
         // 设置 Broker 卷和挂载点（如果启用了持久化）
         if (rocketMQTemplate.getPersistenceEnabled()) {
             String volumeName = "broker-data";
             Volume dataVolume = new Volume(volumeName);
             PersistentVolumeClaimVolumeSource pvcVolumeSource = new PersistentVolumeClaimVolumeSource(
-                String.join("-", project, ROCKETMQ, BROKER, "pvc"));
+                    String.join("-", project, ROCKETMQ, BROKER, "pvc"));
             dataVolume.setPersistentVolumeClaim(pvcVolumeSource);
 
             VolumeMount dataMount = new VolumeMount(volumeName, "/home/rocketmq/store");
-            brokerContainer.setVolumeMounts(Arrays.asList(dataMount));
+            brokerContainer.setVolumeMounts(List.of(dataMount));
+
+            brokerDeployment.setVolumes(List.of(dataVolume));
         }
+
+        LinkedHashMap<String, Object> brokerDeploymentMap = DeploymentParser.parseTemplate(brokerDeployment);
+        result.append(JacksonUtils.toYaml(brokerDeploymentMap));
 
         // 创建 Name Server Service
         String namesrvServiceName = String.join("-", project, ROCKETMQ, NAMESRV, "service");
-        String namesrvAppLabel = String.join("-", project, ROCKETMQ, NAMESRV);
-        Map<String, String> namesrvLabels = Map.of("app", namesrvAppLabel);
 
         Service namesrvService = new Service(namesrvServiceName, namesrvLabels,
-            Arrays.asList(new ServicePort(rocketMQTemplate.getNamesrvPort(), rocketMQTemplate.getNamesrvPort())));
+                List.of(new ServicePort(rocketMQTemplate.getNamesrvPort(), rocketMQTemplate.getNamesrvPort())));
         namesrvService.setNamespace(project);
         namesrvService.setType(rocketMQTemplate.getServiceType());
 
@@ -115,8 +147,6 @@ public class RocketMQParser {
 
         // 创建 Broker Service
         String brokerServiceName = String.join("-", project, ROCKETMQ, BROKER, "service");
-        String brokerAppLabel = String.join("-", project, ROCKETMQ, BROKER);
-        Map<String, String> brokerLabels = Map.of("app", brokerAppLabel);
 
         List<ServicePort> brokerPorts = new ArrayList<>();
         brokerPorts.add(new ServicePort(rocketMQTemplate.getBrokerPort(), rocketMQTemplate.getBrokerPort()));

@@ -5,7 +5,7 @@ metadata:
 spec:
   selector:
     app: podLabel
-  ports:
-    - protocol: TCP
-      port: 0
-      targetPort: 0
+#  ports:
+#    - protocol: TCP
+#      port: 0
+#      targetPort: 0

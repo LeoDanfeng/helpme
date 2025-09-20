@@ -2,8 +2,7 @@ package com.self.appreciation.helpme.yaml.parser;
 
 import com.self.appreciation.helpme.util.JacksonUtils;
 import com.self.appreciation.helpme.yaml.model.Namespace;
-import com.self.appreciation.helpme.yaml.template.MysqlTemplate;
-import com.self.appreciation.helpme.yaml.template.RedisTemplate;
+import com.self.appreciation.helpme.yaml.template.*;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.core.convert.support.DefaultConversionService;
 import org.springframework.util.StringUtils;
@@ -36,15 +35,36 @@ public class TemplateParser {
     }
 
     public static String getResourceTemplate(String project, String template, String[] kvPairs) throws Exception {
-
-        // 命名规则 project + template +
-
         if ("mysql".equalsIgnoreCase(template)) {
             MysqlTemplate mysqlTemplate = (MysqlTemplate) parseArgsToTemplate(kvPairs, MysqlTemplate.class);
             return MysqlParser.ParseTemplate(project, mysqlTemplate);
         } else if ("redis".equalsIgnoreCase(template)) {
             RedisTemplate redisTemplate = (RedisTemplate) parseArgsToTemplate(kvPairs, RedisTemplate.class);
             return RedisParser.ParseTemplate(project, redisTemplate);
+        } else if ("kafka".equalsIgnoreCase(template)) {
+            KafkaTemplate kafkaTemplate = (KafkaTemplate) parseArgsToTemplate(kvPairs, KafkaTemplate.class);
+            return KafkaParser.parseTemplate(project, kafkaTemplate);
+        } else if ("rabbitmq".equalsIgnoreCase(template)) {
+            RabbitMQTemplate rabbitMQTemplate = (RabbitMQTemplate) parseArgsToTemplate(kvPairs, RabbitMQTemplate.class);
+            return RabbitMQParser.parseTemplate(project, rabbitMQTemplate);
+        } else if ("rocketmq".equalsIgnoreCase(template)) {
+            RocketMQTemplate rocketMQTemplate = (RocketMQTemplate) parseArgsToTemplate(kvPairs, RocketMQTemplate.class);
+            return RocketMQParser.parseTemplate(project, rocketMQTemplate);
+        } else if ("zookeeper".equalsIgnoreCase(template)) {
+            ZookeeperTemplate zookeeperTemplate = (ZookeeperTemplate) parseArgsToTemplate(kvPairs, ZookeeperTemplate.class);
+            return ZookeeperParser.parseTemplate(project, zookeeperTemplate);
+        } else if ("consul".equalsIgnoreCase(template)) {
+            ConsulTemplate consulTemplate = (ConsulTemplate) parseArgsToTemplate(kvPairs, ConsulTemplate.class);
+            return ConsulParser.parseTemplate(project, consulTemplate);
+        } else if ("nacos".equalsIgnoreCase(template)) {
+            NacosTemplate nacosTemplate = (NacosTemplate) parseArgsToTemplate(kvPairs, NacosTemplate.class);
+            return NacosParser.parseTemplate(project, nacosTemplate);
+        } else if ("sentinel".equalsIgnoreCase(template)) {
+            SentinelTemplate sentinelTemplate = (SentinelTemplate) parseArgsToTemplate(kvPairs, SentinelTemplate.class);
+            return SentinelParser.parseTemplate(project, sentinelTemplate);
+        } else if ("seata".equalsIgnoreCase(template)) {
+            SeataTemplate seataTemplate = (SeataTemplate) parseArgsToTemplate(kvPairs, SeataTemplate.class);
+            return SeataParser.parseTemplate(project, seataTemplate);
         }
         throw new IllegalArgumentException("Unsupported resource type:" + template);
     }
